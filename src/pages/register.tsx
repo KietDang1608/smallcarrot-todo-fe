@@ -1,35 +1,35 @@
 import { Alert, Box, Button, Checkbox, Container, FormControlLabel, Link, Snackbar, TextField, Typography } from "@mui/material";
 import { useRouter } from "next/router";
 import React, { useState } from "react";
-import { login } from "@/lib/api/auth";
-import { redirectToGoogleLogin } from '@/lib/api/auth';
+import { redirectToGoogleLogin, register } from "@/lib/api/auth";
 
-
-export default function LoginPage() {
+export default function RegisterPage() {
     const router = useRouter();
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
-    const [rememberMe, setRememberMe] = useState(false);
+    const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+
     const [error, setError] = useState("");
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError("");
         setLoading(true);
+        if (password !== confirmPassword) {
+            setError("Mật khẩu không khớp!");
+            setLoading(false);
+            return;
+        }
 
         try {
-            const user = await login({ username, password });
-            if (rememberMe) {
-                localStorage.setItem('auth', JSON.stringify(user));
-            } else {
-                sessionStorage.setItem('auth', JSON.stringify(user));
-            }
-            setSuccess(true); // ✅ Hiện snackbar
+            const user = await register({ username, password });
+            setSuccess(true);
             setTimeout(() => {
-                router.push("/"); // ⏳ Đợi rồi mới chuyển trang
-            }, 1000);
+                router.push("/login"); // ⏳ Đợi rồi mới chuyển trang
+            }, 2000);
+
         } catch (err: any) {
             setError(err.message);
         } finally {
@@ -98,7 +98,7 @@ export default function LoginPage() {
                             fontWeight: 'bold', // Makes the text bold
                         }}
                     >
-                        ĐĂNG NHẬP
+                        ĐĂNG KÝ TÀI KHOẢN
                     </Typography>
 
                     <Box component="form" sx={{ width: '100%' }} onSubmit={handleSubmit}>
@@ -119,19 +119,27 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
+                        <TextField
+                            margin="normal"
+                            required
+                            fullWidth
+                            label="Nhâp lại mật khẩu"
+                            type="password"
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                        />
                         <Button
                             type="submit"
                             fullWidth
                             variant="contained"
                             sx={{ mt: 3 }}
                         >
-                            Đăng nhập
+                            Đăng ký
                         </Button>
                         <Button
-
+                            onClick={redirectToGoogleLogin}
                             fullWidth
                             variant="outlined"
-                            onClick={redirectToGoogleLogin}
                             sx={{
                                 textTransform: 'none',
                                 mt: 2,
@@ -149,14 +157,14 @@ export default function LoginPage() {
                                 src="/imgs/google.webp"
                                 alt="Google Icon"
                                 sx={{ width: 24, height: 24, mr: 1 }}
-                                
+
                             >
 
                             </Box>
                             Đăng nhập bằng Google
                         </Button>
                         <Typography>
-                            Chưa có tài khoản? <Link href="/register" variant="body2">Đăng ký ngay</Link>
+                            Đã có tài khoản? <Link href="/login" variant="body2">Đăng nhập ngay</Link>
                         </Typography>
                         <Box
                             sx={{
@@ -166,23 +174,7 @@ export default function LoginPage() {
                                 mt: 2,
                             }}
                         >
-                            <FormControlLabel
-                                control={
-                                    <Checkbox
-
-                                        color="primary"
-                                    />
-                                }
-                                label="Nhớ đăng nhập"
-                            />
-                            <Box textAlign="center">
-                                <Link href="/reset-password" variant="body2">
-                                    Quên mật khẩu?
-                                </Link>
-                            </Box>
                         </Box>
-
-
                     </Box>
                 </Box>
             </Box>
@@ -203,7 +195,7 @@ export default function LoginPage() {
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
                 <Alert onClose={() => setSuccess(false)} severity="success" sx={{ width: '100%' }}>
-                    Đăng nhập thành công!
+                    Tạo tài khoản thành công!
                 </Alert>
             </Snackbar>
         </Container>
